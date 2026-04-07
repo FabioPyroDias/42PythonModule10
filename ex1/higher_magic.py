@@ -1,16 +1,19 @@
-def spell_combiner(spell1: callable, spell2: callable) -> callable:
+from collections.abc import Callable
+
+
+def spell_combiner(spell1: Callable, spell2: Callable) -> Callable:
     def combiner(*args, **kwargs):
         return (spell1(*args, **kwargs), spell2(*args, **kwargs))
     return combiner
 
 
-def power_amplifier(base_spell: callable, multiplier: int) -> callable:
-    def amplifier():
-        return base_spell() * multiplier
+def power_amplifier(base_spell: Callable, multiplier: int) -> Callable:
+    def amplifier(target: str, power: int):
+        return base_spell(target, power * multiplier)
     return amplifier
 
 
-def conditional_caster(condition: callable, spell: callable) -> callable:
+def conditional_caster(condition: Callable, spell: Callable) -> Callable:
     def conditional(*args, **kwargs):
         if condition(*args, **kwargs):
             return spell(*args, **kwargs)
@@ -18,7 +21,7 @@ def conditional_caster(condition: callable, spell: callable) -> callable:
     return conditional
 
 
-def spell_sequence(spells: list[callable]) -> callable:
+def spell_sequence(spells: list[Callable]) -> Callable:
     def sequence(*args, **kwargs):
         return [spell(*args, **kwargs) for spell in spells]
     return sequence
@@ -28,14 +31,15 @@ if __name__ == "__main__":
     print()
     print("Testing spell combiner...")
 
-    def fireball(target):
-        return f"Fireball hits {target}"
+    def fireball(target: str, power: int) -> str:
+        return f"Fireball hits {target} for {power} HP"
 
-    def heal(target):
-        return f"Heals {target}"
+    def heal(target: str, power: int):
+        return f"Heal restores {target} for {power} HP"
+
     try:
         combined_spell = spell_combiner(fireball, heal)
-        values = combined_spell("Dragon")
+        values = combined_spell("Dragon", 25)
         result = ""
         index = 0
         while index < len(values):
@@ -49,37 +53,28 @@ if __name__ == "__main__":
     print()
     print("Testing power amplifier...")
 
-    def fireball():
-        return 10
     try:
-        amplified_fireball = power_amplifier(fireball, 3)
-        print(f"Original: {fireball()}, Amplified: {amplified_fireball()}")
+        mega_fireball = power_amplifier(fireball, 3)
+        print(f"Original: \"{fireball('Dragon', 10)}\", "
+              f"Amplified: \"{mega_fireball('Dragon', 10)}\"")
     except TypeError as error:
         print(error)
     print()
     print("Testing conditional_caster...")
 
-    def spell(target):
-        return f"Wingardium Leviosa on {target}"
-
-    def condition(target):
+    def condition(target: str, power: int):
         return target == "Troll"
     try:
-        conditional = conditional_caster(condition, spell)
-        print(conditional("Troll"))
-        print(conditional("Dragon"))
+        conditional = conditional_caster(condition, fireball)
+        print(conditional("Troll", 10))
+        print(conditional("Dragon", 10))
     except TypeError as error:
         print(error)
     print()
     print("Testing spell sequence...")
 
-    def fireball(target):
-        return f"Fireball hits {target}"
-
-    def heal(target):
-        return f"Heals {target}"
     try:
         sequence = spell_sequence([fireball, heal])
-        print(sequence("Dragon"))
+        print(sequence("Dragon", 10))
     except TypeError as error:
         print(error)

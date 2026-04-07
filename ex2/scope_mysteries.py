@@ -1,4 +1,7 @@
-def mage_counter() -> callable:
+from collections.abc import Callable
+
+
+def mage_counter() -> Callable:
     count = 0
 
     def counter():
@@ -8,7 +11,7 @@ def mage_counter() -> callable:
     return counter
 
 
-def spell_accumulator(initial_power: int) -> callable:
+def spell_accumulator(initial_power: int) -> Callable:
     power = initial_power
 
     def accumulator(add_power: int):
@@ -18,13 +21,13 @@ def spell_accumulator(initial_power: int) -> callable:
     return accumulator
 
 
-def enchantment_factory(enchantment_type: str) -> callable:
+def enchantment_factory(enchantment_type: str) -> Callable:
     def enchantment(item_name: str):
         return f"{enchantment_type} {item_name}"
     return enchantment
 
 
-def memory_vault() -> dict[str, callable]:
+def memory_vault() -> dict[str, Callable]:
     vault = {}
 
     def store(key, value):
@@ -39,23 +42,22 @@ if __name__ == "__main__":
     print()
     print("Testing mage counter...")
     try:
-        counter = mage_counter()
-        index = 1
-        while index < 4:
-            print(f"Call {index}: {counter()}")
-            index += 1
+        counter_a = mage_counter()
+        counter_b = mage_counter()
+        print(f"counter_a call 1: {counter_a()}")
+        print(f"counter_a call 2: {counter_a()}")
+        print(f"counter_b call 1: {counter_b()}")
     except TypeError as error:
         print(error)
     print()
     print("Testing spell accumulator...")
     try:
-        powerup = spell_accumulator(10)
-        index = 1
-        print("Initial power: 10")
-        while index < 4:
-            print(f"Call {index}, added power {index * 5}: "
-                  f"{powerup(index * 5)}")
-            index += 1
+        base = 100
+        powerup = spell_accumulator(base)
+        powerup_20 = 20
+        print(f"Base {base}, add {powerup_20}: {powerup(powerup_20)}")
+        powerup_30 = 30
+        print(f"Base {base}, add {powerup_30}: {powerup(powerup_30)}")
     except TypeError as error:
         print(error)
     print()
@@ -71,9 +73,12 @@ if __name__ == "__main__":
     print("Testing memory vault...")
     try:
         vault = memory_vault()
-        vault["store"]("Sword", {"Attack": 15, "Defense": 3, "Durability": 8})
-        vault["store"]("Shield",
-                       {"Attack": 5, "Defense": 12, "Durability": 20})
-        print(vault["recall"]("Sword"))
-    except TypeError as error:
+        key = "secret"
+        value = 42
+        vault["store"](key, value)
+        print(f"Store \'{key}\' = {value}")
+        print(f"Recall \'{key}\': {vault['recall'](key)}")
+        wrong_key = "unknown"
+        print(f"Recall \'{wrong_key}\': {vault['recall'](wrong_key)}")
+    except (NameError, TypeError) as error:
         print(error)

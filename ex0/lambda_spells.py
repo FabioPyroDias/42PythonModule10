@@ -26,7 +26,8 @@ if __name__ == "__main__":
         artifacts = [{'name': 'Earth Shield', 'power': 79, 'type': 'focus'},
                      {'name': 'Wind Cloak', 'power': 72, 'type': 'armor'},
                      {'name': 'Water Chalice', 'power': 108, 'type': 'weapon'},
-                     {'name': 'Shadow Blade', 'power': 104, 'type': 'relic'}]
+                     {'name': 'Shadow Blade', 'power': 104, 'type': 'relic'}
+                     ]
         artifacts = artifact_sorter(artifacts)
         current = 0
         result = ""
@@ -37,7 +38,7 @@ if __name__ == "__main__":
                 result += "comes before "
             current += 1
         print(result)
-    except TypeError:
+    except (TypeError, KeyError):
         print("Invalid input")
     print()
     print("Testing power_filter...")
@@ -57,7 +58,7 @@ if __name__ == "__main__":
                 result += ", "
             current += 1
         print(result)
-    except TypeError:
+    except (TypeError, KeyError):
         print("Invalid input")
     print()
     print("Testing spell_transformer...")
@@ -89,5 +90,5 @@ if __name__ == "__main__":
                  {'name': 'Riley', 'power': 81, 'element': 'shadow'}]
         stats = mage_stats(stats)
         print(stats)
-    except TypeError:
+    except (TypeError, KeyError):
         print("Invalid input")

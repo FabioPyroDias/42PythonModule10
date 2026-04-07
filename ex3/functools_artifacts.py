@@ -1,15 +1,20 @@
 from functools import reduce, partial, lru_cache, singledispatch
+import operator
 
 
 def spell_reducer(spells: list[int], operation: str) -> int:
+    if len(spells) == 0:
+        return 0
+
     if operation == "add":
-        return reduce(lambda x, y: x + y, spells)
+        return reduce(lambda x, y: operator.add(x, y), spells)
     if operation == "multiply":
-        return reduce(lambda x, y: x * y, spells)
+        return reduce(lambda x, y: operator.mul(x, y), spells)
     if operation == "max":
-        return reduce(lambda x, y: x if x > y else y, spells)
+        return reduce(lambda x, y: x if operator.gt(x, y) else y, spells)
     if operation == "min":
-        return reduce(lambda x, y: x if x < y else y, spells)
+        return reduce(lambda x, y: x if operator.lt(x, y) else y, spells)
+    raise TypeError("Operation unknown")
 
 
 def partial_enchanter(base_enchantment: callable) -> dict[str, callable]:
@@ -33,19 +38,19 @@ def memoized_fibonacci(n: int) -> int:
 def spell_dispatcher() -> callable:
     @singledispatch
     def dispatch(arg):
-        raise NotImplementedError(f"No behaviour for {type(arg)}.")
+        raise NotImplementedError("Unknown spell type")
 
     @dispatch.register(int)
     def _(damage_spell) -> str:
-        return f"Spell casted dealt {damage_spell} damage to target"
+        return f"Damage spell: {damage_spell} damage"
 
     @dispatch.register(str)
     def _(enchantment) -> str:
-        return f"Enchantment casted: {enchantment}"
+        return f"Enchantment: {enchantment}"
 
     @dispatch.register(list)
     def _(multi_cast) -> str:
-        return [dispatch(spell) for spell in multi_cast]
+        return f"Multi-cast: {len(multi_cast)} spells"
     return dispatch
 
 
@@ -63,7 +68,6 @@ if __name__ == "__main__":
     print()
     print("Testing partial enchanter...")
     try:
-
         def base_enchantment(power: int, element: str, target: str):
             return {"power": power, "element": element, "target": target}
         enchanter = partial_enchanter(base_enchantment)
@@ -79,11 +83,13 @@ if __name__ == "__main__":
         print(f"Enchantment of {lightning_enchantment['element']} on "
               f"{lightning_enchantment['target']}. "
               f"Power: +{lightning_enchantment['power']}")
-    except TypeError as error:
+    except (TypeError, KeyError) as error:
         print(error)
     print()
     print("Testing memoized_fibonacci...")
     try:
+        print(f"Fib(0): {memoized_fibonacci(0)}")
+        print(f"Fib(1): {memoized_fibonacci(1)}")
         print(f"Fib(10): {memoized_fibonacci(10)}")
         print(f"Fib(15): {memoized_fibonacci(15)}")
     except TypeError as error:
@@ -92,8 +98,9 @@ if __name__ == "__main__":
     print("Testing spell dispatcher...")
     try:
         dispatcher = spell_dispatcher()
-        print(dispatcher(50))
-        print(dispatcher("Wingardium Leviosa"))
-        print(dispatcher(["Fireball", 10, "Lightning Bolt", 25]))
+        print(dispatcher(42))
+        print(dispatcher("fireball"))
+        print(dispatcher(["Fireball", "Lightning Bolt", "Heal"]))
+        print(dispatcher(42.42))
     except NotImplementedError as error:
         print(error)

@@ -1,20 +1,21 @@
+from collections.abc import Callable
 from functools import wraps
 import time
 
 
-def spell_timer(func: callable) -> callable:
+def spell_timer(func: Callable) -> Callable:
     @wraps(func)
     def wrapper(*args, **kwargs):
         print(f"Casting {func.__name__}...")
         time_start = time.time()
         result = func(*args, **kwargs)
-        print(f"Spell completed in {(time.time() - time_start)} seconds")
+        print(f"Spell completed in {(time.time() - time_start):.3f} seconds")
         return result
     return wrapper
 
 
-def power_validator(min_power: int) -> callable:
-    def decorator(spell: callable) -> callable:
+def power_validator(min_power: int) -> Callable:
+    def decorator(spell: Callable) -> Callable:
         @wraps(spell)
         def wrapper(*args, **kwargs):
             power = kwargs["power"]
@@ -26,18 +27,18 @@ def power_validator(min_power: int) -> callable:
     return decorator
 
 
-def retry_spell(max_attempts: int) -> callable:
-    def decorator(spell: callable):
+def retry_spell(max_attempts: int) -> Callable:
+    def decorator(spell: Callable):
         @wraps(spell)
         def wrapper(*args, **kwargs):
-            attempt = 0
+            attempt = 1
             while attempt < max_attempts:
                 try:
                     return spell(*args, **kwargs)
                 except Exception:
-                    attempt += 1
-                    print(f"Spell failed, retrying... ({attempt}/"
+                    print(f"Spell failed, retrying... (attempt {attempt}/"
                           f"{max_attempts})")
+                    attempt += 1
             return f"Spell casting failed after {max_attempts} attempts"
         return wrapper
     return decorator
@@ -64,7 +65,7 @@ class MageGuild:
 
 if __name__ == "__main__":
     print()
-    print("Testing spell time...")
+    print("Testing spell timer...")
     try:
         def fireball():
             return "Fireball cast!"
@@ -85,26 +86,25 @@ if __name__ == "__main__":
     print()
     print("Testing retry spell...")
 
-    @retry_spell(5)
+    @retry_spell(3)
     def failed_spell():
         raise ValueError
+
+    @retry_spell(10)
+    def spelled():
+        return "Waaaaaaagh spelled !"
+
     print(failed_spell())
+    print(spelled())
+
     print()
-    print("Testing mage guild validate mage name...")
+    print("Testing MageGuild...")
     try:
-        mage_name_1 = "Aurelio Hogsworth"
-        mage_name_2 = "Solaris"
-        mage_name_3 = "Wrong Name!"
-        mage_name_4 = "Shrek123"
-        print(f"{mage_name_1}: {MageGuild.validate_mage_name(mage_name_1)}")
-        print(f"{mage_name_2}: {MageGuild.validate_mage_name(mage_name_2)}")
-        print(f"{mage_name_3}: {MageGuild.validate_mage_name(mage_name_3)}")
-        print(f"{mage_name_4}: {MageGuild.validate_mage_name(mage_name_4)}")
-    except TypeError as error:
-        print(error)
-    print()
-    print("Testing cast spell...")
-    try:
+        mage_name_1 = "Pyro"
+        mage_name_2 = "Shrek123"
+        print(f"{MageGuild.validate_mage_name(mage_name_1)}")
+        print(f"{MageGuild.validate_mage_name(mage_name_2)}")
+
         guild = MageGuild()
         print(guild.cast_spell("Lightning", power=15))
         print(guild.cast_spell("Pinch", power=1))
